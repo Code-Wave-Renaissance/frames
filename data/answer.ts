@@ -1,6 +1,8 @@
-export type ApplicantDataType = {
+export type TaskDataType = {
     id: string;
-    fid: string;
+    fid: number;
+    displayName: string;
+    pfpUrl: string;
     title: string;
     description: string;
     price: number;

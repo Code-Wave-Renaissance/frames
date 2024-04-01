@@ -7,36 +7,48 @@ import { handle } from 'frog/next'
 import { devtools } from 'frog/dev'
 import { serveStatic } from 'frog/serve-static'
 
-import { ApplicantDataType } from '@/data/answer'
+import { TaskDataType } from '@/data/answer'
 
-const mockApplicantData: ApplicantDataType = {
+const mockTaskData: TaskDataType = {
   id: "",
-  fid: "",
+  fid: 0,
+  displayName: "",
+  pfpUrl: "",
   title: "",
   description: "",
   price: 0,
 };
 
-async function createApplicant(applicantData: ApplicantDataType) {
+// super basic random id generator
+function generateRandomId(): string {
+  const timestamp = Date.now().toString(36);
+  const randomString = Math.random().toString(36).substring(2, 7);
+  return timestamp + randomString;
+}
+
+async function createTask(taskData: TaskDataType) {
+
+  const id = generateRandomId();
+
+  taskData.id = id;
+  
   try {
-    const response = await fetch('http://localhost:5000/api/new', { // Adjust the URL to your actual API endpoint
+    const response = await fetch('http://localhost:5000/api/new', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(applicantData),
+      body: JSON.stringify(taskData),
     });
 
     if (!response.ok) {
-      throw new Error('Failed to create applicant');
+      throw new Error('Failed to create task');
     }
 
     const result = await response.text(); // or response.json() if your server responds with JSON
     console.log(result); // Handle success
-    alert('Applicant created successfully'); // Simple success feedback
   } catch (error) {
-    console.error("Error creating applicant:", error);
-    alert('Error creating applicant'); // Simple error feedback
+    console.error("Error creating task:", error);
   }
 }
 
@@ -85,14 +97,13 @@ const app = new Frog({
     // </div>
     // ),
     intents: [
-      <Button value='create' action='/page/create/title'>Create Task</Button>,
+      <Button value='create' action='/create/title'>Create Task</Button>,
       <Button.Redirect location='https://google.com' >Explore Tasks</Button.Redirect>,
     ],
   })
-}).frame('/page/create/title', neynarMiddleware, (c) => {
+}).frame('/create/title', neynarMiddleware, (c) => {
   const { displayName } = c.var.interactor || {}
   return c.res({
-    // action: '/page/1',
     image: (
       <div
         style={{
@@ -143,15 +154,15 @@ const app = new Frog({
     ),
     intents: [
       <Button value='return' action='/'>↩️ Return</Button>,
-      <Button action='/page/create/description'>Confirm ✅</Button>,
+      <Button action='/create/description'>Confirm ✅</Button>,
       <TextInput placeholder="Your TASK Title here" />,
     ],
   })
-}).frame('/page/create/description', neynarMiddleware, (c) => {
-  const { displayName } = c.var.interactor || {}
-  const { inputText } = c;
+}).frame('/create/description', neynarMiddleware, (c) => {
+  const { inputText, buttonValue } = c;
+  // buttonValue !== 'description-return' ? (mockTaskData.title = inputText as string): "";
+  mockTaskData.title = inputText || "";
   return c.res({
-    action: '/page/1',
     image: (
       <div
         style={{
@@ -201,13 +212,121 @@ const app = new Frog({
       </div>
     ),
     intents: [
-      <Button value='return' action='/page/create/title'>↩️ Return</Button>,
+      // <Button value='title-return' action='/create/title'>↩️ Return</Button>,
+      <Button.Reset>↩️ Return</Button.Reset>,
       inputText ?
         <TextInput placeholder="Your TASK Description here" />
         : null,
       inputText ?
-        <Button action='/page/create/amount'>Confirm ✅</Button>
+        <Button action='/create/amount'>Confirm ✅</Button>
         : null,
+    ],
+  })
+}).frame('/create/amount', neynarMiddleware, (c) => {
+  const { inputText } = c;
+  mockTaskData.description = inputText || "";
+  return c.res({
+    image: (
+      <div
+        style={{
+          display: 'flex',
+          height: '100%',
+          width: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          backgroundImage: 'linear-gradient(to bottom, #38bdf8, #1d4ed8)',
+          // fontSize: 50,
+          letterSpacing: -2,
+          fontWeight: 700,
+          textAlign: 'center',
+        }}
+      >
+        {/* <p
+          style={{
+            backgroundImage: 'linear-gradient(180deg, #1d4ed8, #1e3a8a)',
+            backgroundClip: 'text',
+            color: 'transparent',
+            fontSize: 60,
+          }}
+        >
+          Now we're talking! 🚀
+        </p> */}
+        <p
+          style={{
+            backgroundImage: 'linear-gradient(180deg, #1e40af, #1e3a8a)',
+            backgroundClip: 'text',
+            color: 'transparent',
+            fontSize: 100,
+          }}
+        >
+          {inputText ? "How much would you like to charge for your TASK?" : "It looks like you didn't give a description 😅"}
+        </p>
+      </div>
+    ),
+    intents: [
+      // <Button value='description-return' action='/create/description'>↩️ Return</Button>,
+      <Button.Reset>↩️ Return</Button.Reset>,
+      inputText ?
+        <TextInput placeholder="Example: 100" />
+        : null,
+      inputText ?
+        <Button action='/finish'>Confirm ✅</Button>
+        : null,
+    ],
+  })
+}).frame('/finish', neynarMiddleware, (c) => {
+  const { inputText } = c;
+  const { followerCount, displayName, pfpUrl } = c.var.interactor || {}
+  const { frameData } = c
+  const { fid }: any = frameData
+  mockTaskData.fid = fid;
+  mockTaskData.displayName = displayName as string;
+  mockTaskData.pfpUrl = pfpUrl as string;
+  mockTaskData.price = parseInt(inputText || "0");
+  createTask(mockTaskData);
+  return c.res({
+    image: (
+      <div
+        style={{
+          display: 'flex',
+          height: '100%',
+          width: '100%',
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          backgroundImage: 'linear-gradient(to bottom, #38bdf8, #1d4ed8)',
+          // fontSize: 50,
+          letterSpacing: -2,
+          fontWeight: 700,
+          textAlign: 'center',
+        }}
+      >
+        <p
+          style={{
+            backgroundImage: 'linear-gradient(180deg, #1d4ed8, #1e3a8a)',
+            backgroundClip: 'text',
+            color: 'transparent',
+            fontSize: 60,
+          }}
+        >
+          Thank you for creating a TASK! 🚀
+        </p>
+        <p
+          style={{
+            backgroundImage: 'linear-gradient(180deg, #1e40af, #1e3a8a)',
+            backgroundClip: 'text',
+            color: 'transparent',
+            fontSize: 100,
+          }}
+        >
+          Share with your {followerCount || "many"} followers!
+        </p>
+      </div>
+    ),
+    intents: [
+      <Button.Reset>🔄️ Reset</Button.Reset>,
+      <Button.Redirect location="https://google.com">Check your TASK ⭐</Button.Redirect>,
     ],
   })
 })
