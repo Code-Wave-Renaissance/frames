@@ -8,6 +8,7 @@ import { devtools } from 'frog/dev'
 import { serveStatic } from 'frog/serve-static'
 
 import { TaskDataType } from '@/data/answer'
+import { mock } from 'node:test'
 
 const mockTaskData: TaskDataType = {
   id: "",
@@ -17,6 +18,10 @@ const mockTaskData: TaskDataType = {
   title: "",
   description: "",
   price: 0,
+  verifiedAddresses: {
+    ethAddresses: [],
+    solAddresses: []
+  },
 };
 
 // super basic random id generator
@@ -33,7 +38,7 @@ async function createTask(taskData: TaskDataType) {
   taskData.id = id;
   
   try {
-    const response = await fetch('http://localhost:5000/api/new', {
+    const response = await fetch(`${process.env.VERCEL_URL || "http://localhost:5000"}/api/new`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -277,13 +282,14 @@ const app = new Frog({
   })
 }).frame('/finish', neynarMiddleware, (c) => {
   const { inputText } = c;
-  const { followerCount, displayName, pfpUrl } = c.var.interactor || {}
+  const { followerCount, displayName, pfpUrl, verifiedAddresses } = c.var.interactor || {}
   const { frameData } = c
   const { fid }: any = frameData
   mockTaskData.fid = fid;
   mockTaskData.displayName = displayName as string;
   mockTaskData.pfpUrl = pfpUrl as string;
   mockTaskData.price = parseInt(inputText || "0");
+  mockTaskData.verifiedAddresses = verifiedAddresses ? (verifiedAddresses.ethAddresses || []).concat(verifiedAddresses.solAddresses || []) : [];
   createTask(mockTaskData);
   return c.res({
     image: (

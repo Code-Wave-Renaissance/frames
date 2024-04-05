@@ -6,5 +6,6 @@ export type TaskDataType = {
     title: string;
     description: string;
     price: number;
+    verifiedAddresses: object;
 };
   
