@@ -38,7 +38,7 @@ async function createTask(taskData: TaskDataType) {
   taskData.id = id;
   
   try {
-    const response = await fetch(`${process.env.VERCEL_URL || "http://localhost:5000"}/api/new`, {
+    const response = await fetch(`${process.env.API_URL || "http://localhost:5000"}/api/new`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
