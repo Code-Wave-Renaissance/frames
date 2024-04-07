@@ -22,6 +22,8 @@ const mockTaskData: TaskDataType = {
     ethAddresses: [],
     solAddresses: []
   },
+  applicants: {},
+  status: "open",
 };
 
 // super basic random id generator
