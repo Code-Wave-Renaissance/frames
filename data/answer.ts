@@ -7,6 +7,7 @@ export type TaskDataType = {
     description: string;
     price: number;
     verifiedAddresses: object;
-    applicants: object;
+    applicants: object[];
     status: string;
+    dealWith: string;
 };

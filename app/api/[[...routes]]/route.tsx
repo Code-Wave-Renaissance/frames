@@ -22,8 +22,9 @@ const mockTaskData: TaskDataType = {
     ethAddresses: [],
     solAddresses: []
   },
-  applicants: {},
+  applicants: [],
   status: "open",
+  dealWith: "",
 };
 
 // super basic random id generator
@@ -105,7 +106,7 @@ const app = new Frog({
     // ),
     intents: [
       <Button value='create' action='/create/title'>Create Task</Button>,
-      <Button.Redirect location='https://google.com' >Explore Tasks</Button.Redirect>,
+      <Button.Redirect location='https://taskflow-red.vercel.app/explore-tasks' >Explore Tasks</Button.Redirect>,
     ],
   })
 }).frame('/create/title', neynarMiddleware, (c) => {
@@ -334,7 +335,7 @@ const app = new Frog({
     ),
     intents: [
       <Button.Reset>🔄️ Reset</Button.Reset>,
-      <Button.Redirect location="https://google.com">Check your TASK ⭐</Button.Redirect>,
+      <Button.Redirect location="https://taskflow-red.vercel.app/">Check our Platform ⭐</Button.Redirect>,
     ],
   })
 })
